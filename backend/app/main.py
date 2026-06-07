@@ -1,16 +1,29 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
+from app.core.database import get_db_session
 from app.core.exceptions import AppError, app_error_handler
 from app.modules.auth.router import router as auth_router
 from app.modules.resumes.router import router as resumes_router
 from app.modules.system.router import router as system_router
+from app.modules.users.seed import seed_default_admin
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: seed default admin user
+    with next(get_db_session()) as session:
+        seed_default_admin(session)
+    yield
+    # Shutdown: nothing to cleanup
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    fastapi_app = FastAPI(title="Smart Resume Python")
+    fastapi_app = FastAPI(title="Smart Resume Python", lifespan=lifespan)
     fastapi_app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
