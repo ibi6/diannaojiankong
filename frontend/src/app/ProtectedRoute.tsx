@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { getAuthToken } from '../../lib/authToken'
+import { getAuthToken } from '../lib/authToken'
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = getAuthToken()
